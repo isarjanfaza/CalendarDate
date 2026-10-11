@@ -290,11 +290,11 @@ Any amount helps with the development and improvement of this project. Thank you
 
 ## 📸 Screenshots
 
-<div style="display: flex; gap: 10px; flex-wrap: wrap;">
-  <a href="photo/1.png" target="_blank"><img src="photo/1.png" style="max-width: 25%;" alt="Screenshot 1" /></a>
-  <a href="photo/2.png" target="_blank"><img src="photo/2.png" style="max-width: 25%;" alt="Screenshot 2" /></a>
-  <a href="photo/3.png" target="_blank"><img src="photo/3.png" style="max-width: 25%;" alt="Screenshot 3" /></a>
-  <a href="photo/4.png" target="_blank"><img src="photo/4.png" style="max-width: 25%;" alt="Screenshot 4" /></a>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+  <a href="photo/1.png" target="_blank"><img src="photo/1.png" style="width: 100%; height: auto;" alt="Screenshot 1" /></a>
+  <a href="photo/2.png" target="_blank"><img src="photo/2.png" style="width: 100%; height: auto;" alt="Screenshot 2" /></a>
+  <a href="photo/3.png" target="_blank"><img src="photo/3.png" style="width: 100%; height: auto;" alt="Screenshot 3" /></a>
+  <a href="photo/4.png" target="_blank"><img src="photo/4.png" style="width: 100%; height: auto;" alt="Screenshot 4" /></a>
 </div>
 
 ---

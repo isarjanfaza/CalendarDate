@@ -18,6 +18,15 @@
 
 ---
 
+## 📸 تصاویر
+
+![تصویر 1](photo/1.png)
+![تصویر 2](photo/2.png)
+![تصویر 3](photo/3.png)
+![تصویر 4](photo/4.png)
+
+---
+
 ## ویژگی‌ها
 
 - 📅 نمایش همزمان تاریخ جلالی و میلادی در هر سلول
@@ -276,6 +285,15 @@ If you'd like to support me, you can send a donation to the following bank accou
 **IBAN:** `IR60017000000034348067607`
 
 Any amount helps with the development and improvement of this project. Thank you! 🙏
+
+---
+
+## 📸 Screenshots
+
+![Screenshot 1](photo/1.png)
+![Screenshot 2](photo/2.png)
+![Screenshot 3](photo/3.png)
+![Screenshot 4](photo/4.png)
 
 ---
 

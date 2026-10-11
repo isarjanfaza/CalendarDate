@@ -1,4 +1,4 @@
-# dualcal
+# PersianCalendar
 
 تقویم دوگانه فارسی (جلالی) + میلادی - یک کتابخانه TypeScript مستقل از فریم‌ورک.
 
@@ -60,13 +60,13 @@ npm install dualcal jalaali-js
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="node_modules/dualcal/dist/dualcal.css">
+  <link rel="stylesheet" href="node_modules/persiancalendar/dist/dualcal.css">
 </head>
 <body>
   <div id="calendar"></div>
 
   <script type="module">
-    import { createDualCalendar } from 'dualcal';
+    import { createDualCalendar } from 'persiancalendar';
 
     const calendar = createDualCalendar(document.getElementById('calendar'), {
       holidays: [
@@ -322,7 +322,7 @@ Any amount helps with the development and improvement of this project. Thank you
 ## Installation
 
 ```bash
-npm install dualcal jalaali-js
+npm install persiancalendar jalaali-js
 ```
 
 ## Quick Start
@@ -332,13 +332,13 @@ npm install dualcal jalaali-js
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="node_modules/dualcal/dist/dualcal.css">
+  <link rel="stylesheet" href="node_modules/persiancalendar/dist/dualcal.css">
 </head>
 <body>
   <div id="calendar"></div>
 
   <script type="module">
-    import { createDualCalendar } from 'dualcal';
+    import { createDualCalendar } from 'persiancalendar';
 
     const calendar = createDualCalendar(document.getElementById('calendar'), {
       holidays: [

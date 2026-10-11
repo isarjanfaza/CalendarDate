@@ -1,6 +1,6 @@
 {
-  "name": "dualcal",
-  "version": "1.0.0",
+  "name": "persiancalendar",
+  "version": "1.0.2",
   "description": "Persian (Jalali) + Gregorian calendar widget - framework-agnostic vanilla TypeScript",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

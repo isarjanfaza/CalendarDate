@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dualcal - Vanilla Example</title>
+  <link rel="stylesheet" href="/dist/dualcal.css">
+  <style>
+    @font-face {
+      font-family: 'IranSansX';
+      src: url('/public/IRANSansX-Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'IranSansX';
+      src: url('/public/IRANSansX-Bold.woff2') format('woff2');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+  </style>
+  <style>
+    body {
+      font-family: 'Vazirmatn', 'Tahoma', system-ui, sans-serif;
+      margin: 0;
+      padding: 40px;
+      background-color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 500px;
+      width: 100%;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+    }
+
+    .description {
+      text-align: center;
+      color: #666;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>dualcal - Vanilla Example</h1>
+    <p class="description">
+      Persian (Jalali) + Gregorian calendar widget
+    </p>
+    <div id="calendar"></div>
+  </div>
+
+  <script type="module">
+    import { createDualCalendar } from '/dist/index.js';
+
+    console.log('Script loaded, dualcal imported:', typeof createDualCalendar);
+
+    const container = document.getElementById('calendar');
+    console.log('Container found:', container);
+
+    try {
+      // Load holidays from JSON file
+      const holidaysResponse = await fetch('/examples/holidays.json');
+      const holidaysData = await holidaysResponse.json();
+      console.log('Holidays loaded:', holidaysData);
+
+      const calendar = createDualCalendar(container, {
+        holidays: holidaysData.holidays,
+        weekendDays: [6], // Friday (6 in our system where Saturday=0, Sunday=1, ..., Friday=6)
+        initialDate: new Date(),
+        showHijri: true,
+        gregorianDigits: 'latin',
+        onDayClick: (date, jalaliDate) => {
+          console.log('Day clicked:', date, jalaliDate);
+        },
+        onMonthChange: (grid) => {
+          console.log('Month changed:', grid);
+        },
+        theme: {
+          // Custom theme colors (optional)
+          headerColor: '#B34000',
+          holidayBg: '#FFF0F0',
+          holidayJalaliColor: '#D0021B',
+        },
+      });
+
+      console.log('Calendar created:', calendar);
+      // Expose for debugging
+      window.calendar = calendar;
+    } catch (error) {
+      console.error('Error creating calendar:', error);
+      container.innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Build output (except dist/)
+*.tsbuildinfo
+
+# Tests
+test/
+tests/
+**/*.test.ts
+**/*.spec.ts
+vitest.config.ts
+coverage/
+
+# Examples
+examples/
+
+# Development files
+.tsconfig.json
+.eslintrc.json
+.prettierrc
+.gitignore
+.github/
+
+# Documentation (we want these in the package)
+# README.md
+# CHANGELOG.md
+
+# Misc
+.DS_Store
+Thumbs.db
+*.log

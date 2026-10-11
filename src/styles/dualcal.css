@@ -1,0 +1,1154 @@
+/* dualcal - Persian (Jalali) + Gregorian Calendar Widget */
+/* CSS Variables for theming - all exposed for customization */
+
+@font-face {
+  font-family: 'IranSansX';
+  src: url('/public/IRANSansX-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IranSansX';
+  src: url('/public/IRANSansX-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Outer card */
+  --dc-outer-bg: #F3F3F3;
+  --dc-outer-border: #DDDDDD;
+  --dc-outer-radius: 16px;
+
+  /* Inner card */
+  --dc-inner-bg: #FFFFFF;
+  --dc-inner-radius: 12px;
+
+  /* Binder rings (desk-calendar look) */
+  --dc-binder-color: #C0C0C0;
+  --dc-binder-size: 20px;
+
+  /* Header colors - time.ir autumn theme */
+  --dc-header-color: #AD3D00;
+  --dc-header-text: #FFFFFF;
+  --dc-subheader-color: #313131;
+  --dc-nav-hover: #8A3100;
+
+  /* Weekday row */
+  --dc-weekday-bg: #8B3000;
+  --dc-weekday-text: #FFFFFF;
+  --dc-weekday-radius: 10px;
+
+  /* Day cell */
+  --dc-day-jalali-color: #333333;
+  --dc-day-gregorian-color: #666666;
+  --dc-day-hijri-color: #999999;
+  --dc-day-bg: transparent;
+  --dc-day-radius: 8px;
+
+  /* Out of month */
+  --dc-out-of-month-color: #A0A0A0;
+
+  /* Friday / Holiday */
+  --dc-holiday-bg: #FFE5E5;
+  --dc-holiday-jalali-color: #CC0000;
+  --dc-holiday-gregorian-color: #CC0000;
+  --dc-holiday-hijri-color: #CC0000;
+
+  /* Today highlight */
+  --dc-today-border: #B34000;
+  --dc-today-border-width: 1.5px;
+
+  /* Navigation buttons */
+  --dc-nav-color: #B34000;
+  --dc-nav-hover: #8B2B00;
+
+  /* Go to today button */
+  --dc-today-btn-bg: #B34000;
+  --dc-today-btn-text: #FFFFFF;
+  --dc-today-btn-radius: 10px;
+  --dc-today-btn-hover: #8B2B00;
+
+  /* Event dots */
+  --dc-event-dot-size: 6px;
+
+  /* Typography */
+  --dc-font-family: 'IranSansX', 'Vazirmatn', 'IranSans', 'Tahoma', system-ui, -apple-system, sans-serif !important;
+  --dc-jalali-size: 24px;
+  --dc-jalali-weight: 700;
+  --dc-gregorian-size: 12px;
+  --dc-gregorian-weight: 400;
+  --dc-hijri-size: 10px;
+  --dc-hijri-weight: 400;
+
+  /* Spacing */
+  --dc-cell-padding: 8px;
+  --dc-cell-gap: 2px;
+  --dc-header-padding: 16px;
+  --dc-grid-gap: 4px;
+
+  /* Transitions */
+  --dc-transition: all 0.2s ease-in-out;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dc-outer-bg: #2A2A2A;
+    --dc-outer-border: #444444;
+    --dc-inner-bg: #1A1A1A;
+    --dc-header-color: #FF6B35;
+    --dc-subheader-color: #E0E0E0;
+    --dc-weekday-bg: #B34000;
+    --dc-day-jalali-color: #E0E0E0;
+    --dc-day-gregorian-color: #A0A0A0;
+    --dc-day-hijri-color: #808080;
+    --dc-out-of-month-color: #606060;
+    --dc-holiday-bg: #4A2020;
+    --dc-holiday-jalali-color: #FF5555;
+    --dc-holiday-gregorian-color: #FF5555;
+    --dc-holiday-hijri-color: #FF5555;
+    --dc-today-border: #FF6B35;
+    --dc-nav-color: #FF6B35;
+    --dc-nav-hover: #FF8C5A;
+    --dc-today-btn-bg: #FF6B35;
+    --dc-today-btn-text: #1A1A1A;
+    --dc-today-btn-hover: #FF8C5A;
+  }
+}
+
+/* Support for manual dark mode via data-theme attribute */
+[data-theme="dark"] {
+  --dc-outer-bg: #2A2A2A;
+  --dc-outer-border: #444444;
+  --dc-inner-bg: #1A1A1A;
+  --dc-header-color: #FF6B35;
+  --dc-subheader-color: #E0E0E0;
+  --dc-weekday-bg: #B34000;
+  --dc-day-jalali-color: #E0E0E0;
+  --dc-day-gregorian-color: #A0A0A0;
+  --dc-day-hijri-color: #808080;
+  --dc-out-of-month-color: #606060;
+  --dc-holiday-bg: #4A2020;
+  --dc-holiday-jalali-color: #FF5555;
+  --dc-holiday-gregorian-color: #FF5555;
+  --dc-holiday-hijri-color: #FF5555;
+  --dc-today-border: #FF6B35;
+  --dc-nav-color: #FF6B35;
+  --dc-nav-hover: #FF8C5A;
+  --dc-today-btn-bg: #FF6B35;
+  --dc-today-btn-text: #1A1A1A;
+  --dc-today-btn-hover: #FF8C5A;
+}
+
+/* Base container */
+.dualcal {
+  font-family: 'IranSansX', var(--dc-font-family);
+  direction: rtl;
+  text-align: right;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.dualcal *,
+.dualcal *::before,
+.dualcal *::after {
+  box-sizing: inherit;
+}
+
+/* Outer card with binder rings */
+.dualcal-outer {
+  background-color: var(--dc-outer-bg);
+  border: 1px solid var(--dc-outer-border);
+  border-radius: var(--dc-outer-radius);
+  padding: 24px 16px 16px;
+  position: relative;
+  overflow: visible;
+}
+
+/* ===== Binder rings (decorative) ===== */
+.dualcal-ring {
+  position: absolute;
+  top: -22px;
+  left: 25%;
+  z-index: 2;
+  width: 30px;
+  height: 60px;
+  transform: translateX(-50%);
+  background: var(--dc-binder-color, #A6A6A6);
+  border-radius: 15px;
+  border: 6px solid var(--dc-ring-halo, #FFFFFF);
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+/* second ring: adjacent-sibling selector, independent of :first-of-type */
+.dualcal-ring + .dualcal-ring {
+  left: 75%;
+}
+
+/* ===== Header ===== */
+.dualcal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding-top: 20px;
+  margin-bottom: 14px;
+  position: relative;
+}
+
+.dualcal-title-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.dualcal-title {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--dc-nav-color);
+  font-family: 'IranSansX', var(--dc-font-family);
+}
+
+.dualcal-pick {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--dc-nav-color);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--dc-nav-color);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  font-family: 'IranSansX', var(--dc-font-family);
+}
+
+/* row 2: prev | range | next (RTL: first column = right) */
+.dualcal-sub-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  direction: rtl;
+  gap: 8px;
+  margin: 0;
+}
+
+.dualcal-sub-row > .dualcal-prev { justify-self: start; } /* right side */
+.dualcal-sub-row > .dualcal-next { justify-self: end; }   /* left side  */
+
+.dualcal-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  margin: 0;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--dc-subheader-color);
+  font-family: 'IranSansX', var(--dc-font-family);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.dualcal-nav:hover { background-color: rgba(179, 64, 0, 0.1); }
+
+/* prev: arrow on the far right, text to its left (matches time.ir) */
+.dualcal-prev { flex-direction: row-reverse; }
+
+/* arrow icon (glyph span or svg) takes the accent color */
+.dualcal-nav-arrow,
+.dualcal-nav svg {
+  color: var(--dc-nav-color);
+  flex: 0 0 auto;
+}
+.dualcal-nav svg { width: 18px; height: 18px; }
+
+.dualcal-range {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dc-subheader-color);
+  font-family: 'IranSansX', var(--dc-font-family);
+}
+
+/* row 3: optional Hijri line, only rendered when showHijri */
+.dualcal-hijri-row {
+  margin-top: 2px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--dc-day-hijri-color);
+  font-family: 'IranSansX', var(--dc-font-family);
+}
+
+/* Mobile responsive */
+@media (max-width: 420px) {
+  .dualcal-title {
+    font-size: 20px;
+  }
+
+  .dualcal-nav { font-size: 13px; }
+  .dualcal-range { font-size: 13px; }
+  .dualcal-pick { width: 28px; height: 28px; }
+}
+
+/* Month/year display */
+.dualcal-month-year {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.dualcal-month-name,
+.dualcal-year {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--dc-header-color);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: var(--dc-transition);
+}
+
+.dualcal-month-name:hover,
+.dualcal-year:hover {
+  background-color: rgba(179, 64, 0, 0.1);
+}
+
+/* Month/year selector buttons */
+.dualcal-selector-btn {
+  width: 24px;
+  height: 24px;
+  border: 1.5px solid var(--dc-header-color);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: var(--dc-transition);
+}
+
+.dualcal-selector-btn:hover {
+  background-color: var(--dc-header-color);
+}
+
+.dualcal-selector-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: var(--dc-header-color);
+  transition: var(--dc-transition);
+}
+
+.dualcal-selector-btn:hover svg {
+  fill: var(--dc-inner-bg);
+}
+
+/* Subheader - Gregorian and Hijri ranges */
+.dualcal-subheader {
+  font-size: 12px;
+  color: var(--dc-subheader-color);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.dualcal-gregorian-range,
+.dualcal-hijri-range {
+  display: block;
+  margin: 2px 0;
+}
+
+.dualcal-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  color: var(--dc-nav-color);
+  font-family: var(--dc-font-family);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: var(--dc-transition);
+}
+
+.dualcal-nav-btn:hover {
+  background-color: rgba(179, 64, 0, 0.1);
+  color: var(--dc-nav-hover);
+}
+
+.dualcal-nav-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+/* Weekday header row */
+.dualcal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--dc-grid-gap);
+  margin-bottom: 8px;
+}
+
+.dualcal-weekday {
+  background-color: var(--dc-weekday-bg);
+  color: var(--dc-weekday-text);
+  font-weight: 700;
+  font-size: 14px;
+  text-align: center;
+  padding: 8px 4px;
+  border-radius: var(--dc-weekday-radius);
+  user-select: none;
+  font-family: 'IranSansX', var(--dc-font-family);
+}
+
+/* Calendar grid */
+.dualcal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--dc-grid-gap);
+  margin-bottom: 16px;
+}
+
+/* Day cell */
+.dualcal-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--dc-cell-padding);
+  background-color: var(--dc-day-bg);
+  border-radius: var(--dc-day-radius);
+  cursor: pointer;
+  transition: var(--dc-transition);
+  min-height: 60px;
+  position: relative;
+  user-select: none;
+  font-family: 'IranSansX', var(--dc-font-family);
+}
+
+.dualcal-day:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  .dualcal-day:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+[data-theme="dark"] .dualcal-day:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Jalali number (large, on top) */
+.dualcal-jalali {
+  font-size: var(--dc-jalali-size);
+  font-weight: var(--dc-jalali-weight);
+  color: var(--dc-day-jalali-color);
+  line-height: 1.2;
+  font-family: 'IranSansX', var(--dc-font-family);
+}
+
+/* Gregorian and Hijri numbers (small, below) */
+.dualcal-sub-dates {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.dualcal-gregorian {
+  font-size: var(--dc-gregorian-size);
+  font-weight: var(--dc-gregorian-weight);
+  color: var(--dc-day-gregorian-color);
+  font-family: 'IranSansX', var(--dc-font-family);
+}
+
+.dualcal-hijri {
+  font-size: var(--dc-hijri-size);
+  font-weight: var(--dc-hijri-weight);
+  color: var(--dc-day-hijri-color);
+  font-family: 'IranSansX', var(--dc-font-family);
+}
+
+/* Month name labels (on 1st of month) */
+.dualcal-month-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--dc-day-gregorian-color);
+  margin-top: 2px;
+  font-family: 'IranSansX', var(--dc-font-family);
+}
+
+/* Out of month days */
+.dualcal-day.out-of-month .dualcal-jalali,
+.dualcal-day.out-of-month .dualcal-gregorian,
+.dualcal-day.out-of-month .dualcal-hijri {
+  color: var(--dc-out-of-month-color);
+}
+
+/* Friday / Holiday styling */
+.dualcal-day.friday,
+.dualcal-day.holiday {
+  background-color: var(--dc-holiday-bg);
+}
+
+.dualcal-day.friday .dualcal-jalali,
+.dualcal-day.holiday .dualcal-jalali {
+  color: var(--dc-holiday-jalali-color);
+}
+
+.dualcal-day.friday .dualcal-gregorian,
+.dualcal-day.holiday .dualcal-gregorian {
+  color: var(--dc-holiday-gregorian-color);
+}
+
+.dualcal-day.friday .dualcal-hijri,
+.dualcal-day.holiday .dualcal-hijri {
+  color: var(--dc-holiday-hijri-color);
+}
+
+/* Holiday observance (non-holiday events) - keep normal text color */
+.dualcal-day.holiday-observance {
+  background-color: transparent;
+}
+
+.dualcal-day.holiday-observance .dualcal-jalali {
+  color: var(--dc-day-jalali-color);
+}
+
+.dualcal-day.holiday-observance .dualcal-gregorian {
+  color: var(--dc-day-gregorian-color);
+}
+
+.dualcal-day.holiday-observance .dualcal-hijri {
+  color: var(--dc-day-hijri-color);
+}
+
+/* Out of month + Friday/Holiday */
+.dualcal-day.out-of-month.friday,
+.dualcal-day.out-of-month.holiday {
+  background-color: rgba(208, 2, 27, 0.15);
+}
+
+.dualcal-day.out-of-month.friday .dualcal-jalali,
+.dualcal-day.out-of-month.holiday .dualcal-jalali {
+  color: #E57373;
+}
+
+/* Today highlight */
+.dualcal-day.today {
+  border: var(--dc-today-border-width) solid var(--dc-today-border);
+}
+
+/* Today + Holiday combination */
+.dualcal-day.today.holiday {
+  background-color: var(--dc-holiday-bg);
+  border: var(--dc-today-border-width) solid var(--dc-today-border);
+}
+
+/* Event dots */
+.dualcal-events {
+  display: flex;
+  gap: 2px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.dualcal-event-dot {
+  width: var(--dc-event-dot-size);
+  height: var(--dc-event-dot-size);
+  border-radius: 50%;
+}
+
+/* Go to today button */
+.dualcal-today-btn {
+  width: 100%;
+  padding: 10px 16px;
+  background-color: var(--dc-today-btn-bg);
+  color: var(--dc-today-btn-text);
+  border: none;
+  border-radius: var(--dc-today-btn-radius);
+  font-family: 'IranSansX', var(--dc-font-family);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--dc-transition);
+}
+
+.dualcal-today-btn:hover {
+  background-color: var(--dc-today-btn-hover);
+}
+
+.dualcal-today-btn:active {
+  transform: scale(0.98);
+}
+
+/* Year selector dropdown - MUI style */
+.dualcal-year-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--dc-inner-bg, #FFFFFF);
+  border: 1px solid var(--dc-outer-border, #DDDDDD);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 16px;
+  z-index: 30;
+  margin-top: 8px;
+  min-height: 0;
+  height: auto;
+  transition-duration: 300ms;
+  direction: rtl;
+}
+
+.dualcal-dropdown-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--dc-subheader-color);
+  margin: 0 0 16px 0;
+  text-align: center;
+  font-family: 'IranSansX', var(--dc-font-family);
+}
+
+.dualcal-year-select {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dualcal-year-input-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  max-width: 70%;
+}
+
+.dualcal-year-input {
+  width: 100%;
+  margin-left: 60px;
+  padding: 12px 140px 12px 16px;
+  font-size: 16px;
+  border: 1px solid var(--dc-outer-border, #DDDDDD);
+  border-radius: 8px;
+  background-color: var(--dc-inner-bg, #FFFFFF);
+  color: var(--dc-header-color);
+  font-family: 'IranSansX', var(--dc-font-family);
+  direction: ltr;
+  text-align: left;
+  transition: border-color 0.2s ease;
+  height: 48px;
+  box-sizing: border-box;
+  line-height: 24px;
+}
+
+.dualcal-year-input:focus {
+  outline: none;
+  border-color: var(--dc-nav-color);
+  border-width: 2px;
+  padding: 11px 139px 11px 15px;
+}
+
+.dualcal-year-adornment {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: var(--dc-subheader-color);
+  pointer-events: none;
+  font-family: 'IranSansX', var(--dc-font-family);
+}
+
+.dualcal-year-button {
+     position: absolute;
+    left: 3px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 6px 28px;
+    font-size: 13px;
+    font-weight: 500;
+    background-color: var(--dc-nav-color);
+    color: var(--dc-today-btn-text);
+    border: none;
+    border-radius: 6px 0 0 6px;
+    cursor: pointer;
+    font-family: 'IranSansX', var(--dc-font-family);
+    transition: background-color 0.2s ease;
+    z-index: 1;
+    height: 47px;
+    box-sizing: border-box;
+}
+
+.dualcal-year-button:hover {
+  background-color: var(--dc-nav-hover);
+}
+
+.dualcal-year-button:focus-visible {
+  outline: 2px solid var(--dc-header-color);
+  outline-offset: 2px;
+}
+
+/* Month selector dropdown - time.ir style */
+.dualcal-month-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 16px;
+  z-index: 100;
+  animation: slideDown 0.25s ease;
+  margin-top: 8px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dualcal-dropdown-title {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #313131;
+  text-align: center;
+  font-family: 'IranSansX', var(--dc-font-family);
+}
+
+.dualcal-month-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.dualcal-month-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 13px;
+  color: #313131;
+  font-family: 'IranSansX', var(--dc-font-family);
+}
+
+.dualcal-month-item:hover {
+  background-color: rgba(173, 61, 0, 0.08);
+}
+
+.dualcal-month-item.selected {
+  background-color: rgba(173, 61, 0, 0.12);
+  font-weight: 500;
+}
+
+.dualcal-month-radio {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #AD3D00;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dualcal-month-item.selected .dualcal-month-radio {
+  background-color: #AD3D00;
+}
+
+.dualcal-month-radio::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background-color: white;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.dualcal-month-item.selected .dualcal-month-radio::after {
+  opacity: 1;
+}
+
+.dualcal-month-item:hover {
+  background-color: var(--dc-outer-bg);
+}
+
+.dualcal-month-item.selected {
+  background-color: var(--dc-outer-bg);
+}
+
+.dualcal-month-radio {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--dc-header-color);
+  border-radius: 50%;
+  position: relative;
+}
+
+.dualcal-month-radio.checked {
+  background-color: var(--dc-header-color);
+}
+
+.dualcal-month-radio.checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  background-color: white;
+  border-radius: 50%;
+}
+
+.dualcal-month-item span {
+  font-size: 14px;
+  color: var(--dc-day-jalali-color);
+  font-family: 'IranSansX', var(--dc-font-family);
+}
+
+/* Holidays list */
+.dualcal-holidays-list {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--dc-outer-border);
+}
+
+.dualcal-holidays-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dc-header-color);
+  margin-bottom: 8px;
+}
+
+.dualcal-holiday-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 13px;
+  color: var(--dc-subheader-color);
+}
+
+.dualcal-holiday-date {
+  font-weight: 600;
+  color: var(--dc-header-color);
+  min-width: 60px;
+}
+
+.dualcal-holiday-title {
+  flex: 1;
+}
+
+/* Official holidays in list - red text */
+.dualcal-holiday-item.dualcal-holiday-official .dualcal-holiday-title {
+  color: #CC0000;
+  font-weight: 700;
+}
+
+/* Holiday observances in list - black text */
+.dualcal-holiday-item.dualcal-holiday-observance .dualcal-holiday-title {
+  color: var(--dc-subheader-color);
+  font-weight: 400;
+}
+
+/* Tooltip */
+.dualcal-tooltip {
+  position: absolute;
+  background-color: var(--dc-subheader-color);
+  color: var(--dc-inner-bg);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dualcal-tooltip.visible {
+  opacity: 1;
+}
+
+/* Month/Year selector panels */
+.dualcal-selector-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--dc-inner-bg);
+  border: 1px solid var(--dc-outer-border);
+  border-radius: var(--dc-inner-radius);
+  padding: 16px;
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  display: none;
+}
+
+.dualcal-selector-panel.visible {
+  display: block;
+}
+
+.dualcal-month-grid,
+.dualcal-year-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.dualcal-selector-item {
+  padding: 8px;
+  text-align: center;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--dc-transition);
+  color: var(--dc-day-jalali-color);
+  font-family: 'IranSansX', var(--dc-font-family);
+}
+
+.dualcal-selector-item:hover {
+  background-color: rgba(179, 64, 0, 0.1);
+  color: var(--dc-header-color);
+}
+
+.dualcal-selector-item.selected {
+  background-color: var(--dc-header-color);
+  color: var(--dc-today-btn-text);
+}
+
+/* Keyboard focus styles */
+.dualcal-day:focus-visible,
+.dualcal-nav-btn:focus-visible,
+.dualcal-selector-btn:focus-visible,
+.dualcal-today-btn:focus-visible,
+.dualcal-selector-item:focus-visible {
+  outline: 2px solid var(--dc-header-color);
+  outline-offset: 2px;
+}
+
+/* ARIA attributes support */
+.dualcal-day[aria-selected="true"] {
+  font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .dualcal-outer {
+    padding: 20px 12px 12px;
+  }
+
+  .dualcal-inner {
+    padding: 12px;
+  }
+
+  .dualcal-jalali {
+    font-size: 20px;
+  }
+
+  .dualcal-gregorian {
+    font-size: 11px;
+  }
+
+  .dualcal-day {
+    min-height: 50px;
+    padding: 6px;
+  }
+
+  .dualcal-weekday {
+    font-size: 12px;
+    padding: 6px 2px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .dualcal-outer {
+    border: 1px solid #000;
+    box-shadow: none;
+  }
+
+  .dualcal-nav-btn,
+  .dualcal-selector-btn,
+  .dualcal-today-btn {
+    display: none;
+  }
+}
+
+/* Info button */
+.dualcal-info {
+  position: relative;
+  z-index: 10;
+}
+
+.dualcal-info-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--dc-nav-color);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--dc-nav-color);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  font-family: var(--dc-font-family);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--dc-transition);
+}
+
+.dualcal-info-btn:hover {
+  background-color: rgba(179, 64, 0, 0.1);
+}
+
+.dualcal-info-btn:focus-visible {
+  outline: 2px solid var(--dc-header-color);
+  outline-offset: 2px;
+}
+
+/* Popover */
+.dualcal-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  width: auto;
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
+  background-color: var(--dc-inner-bg, #FFFFFF);
+  border: 1px solid var(--dc-outer-border, #DDDDDD);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  padding: 12px;
+  direction: rtl;
+  font-size: 14px;
+  font-family: var(--dc-font-family);
+  z-index: 20;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 120ms ease-out, transform 120ms ease-out;
+}
+
+.dualcal-popover.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dualcal-popover {
+    transition: none;
+  }
+}
+
+/* Popover arrow (optional) */
+.dualcal-popover::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 12px;
+  width: 12px;
+  height: 12px;
+  background-color: var(--dc-inner-bg, #FFFFFF);
+  border-left: 1px solid var(--dc-outer-border, #DDDDDD);
+  border-top: 1px solid var(--dc-outer-border, #DDDDDD);
+  transform: rotate(45deg);
+}
+
+/* Popover empty state */
+.dualcal-popover-empty {
+  text-align: center;
+  color: var(--dc-subheader-color);
+  padding: 16px;
+}
+
+/* Popover group */
+.dualcal-popover-group {
+  margin-bottom: 12px;
+}
+
+.dualcal-popover-group:last-child {
+  margin-bottom: 0;
+}
+
+.dualcal-popover-group-heading {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dc-header-color);
+  margin-bottom: 8px;
+}
+
+/* Popover list */
+.dualcal-popover-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dualcal-popover-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 13px;
+  color: var(--dc-subheader-color);
+}
+
+.dualcal-popover-date {
+  font-weight: 600;
+  min-width: 60px;
+}
+
+.dualcal-popover-title {
+  flex: 1;
+}
+
+/* Mobile popover */
+@media (max-width: 420px) {
+  .dualcal-popover {
+    left: 0;
+    right: 0;
+    width: auto;
+    max-height: 55vh;
+  }
+}

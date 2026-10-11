@@ -19,10 +19,10 @@
 ## 📸 تصاویر
 
 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-  <a href="photo/1.png" target="_blank"><img src="photo/1.png" width="200" alt="تصویر 1" /></a>
-  <a href="photo/2.png" target="_blank"><img src="photo/2.png" width="200" alt="تصویر 2" /></a>
-  <a href="photo/3.png" target="_blank"><img src="photo/3.png" width="200" alt="تصویر 3" /></a>
-  <a href="photo/4.png" target="_blank"><img src="photo/4.png" width="200" alt="تصویر 4" /></a>
+  <a href="photo/1.png" target="_blank"><img src="photo/1.png" style="max-width: 25%;" alt="تصویر 1" /></a>
+  <a href="photo/2.png" target="_blank"><img src="photo/2.png" style="max-width: 25%;" alt="تصویر 2" /></a>
+  <a href="photo/3.png" target="_blank"><img src="photo/3.png" style="max-width: 25%;" alt="تصویر 3" /></a>
+  <a href="photo/4.png" target="_blank"><img src="photo/4.png" style="max-width: 25%;" alt="تصویر 4" /></a>
 </div>
 
 ---

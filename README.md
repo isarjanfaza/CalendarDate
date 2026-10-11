@@ -290,10 +290,12 @@ Any amount helps with the development and improvement of this project. Thank you
 
 ## 📸 Screenshots
 
-![Screenshot 1](photo/1.png)
-![Screenshot 2](photo/2.png)
-![Screenshot 3](photo/3.png)
-![Screenshot 4](photo/4.png)
+<div style="display: flex; gap: 10px; flex-wrap: wrap;">
+  <a href="photo/1.png" target="_blank"><img src="photo/1.png" width="200" alt="Screenshot 1" /></a>
+  <a href="photo/2.png" target="_blank"><img src="photo/2.png" width="200" alt="Screenshot 2" /></a>
+  <a href="photo/3.png" target="_blank"><img src="photo/3.png" width="200" alt="Screenshot 3" /></a>
+  <a href="photo/4.png" target="_blank"><img src="photo/4.png" width="200" alt="Screenshot 4" /></a>
+</div>
 
 ---
 

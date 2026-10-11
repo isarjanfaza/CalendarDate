@@ -38,8 +38,16 @@
     "date-picker",
     "dual-calendar"
   ],
-  "author": "",
+  "author": "Eytar Janfaza",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isarjanfaza/PersianCalendar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/isarjanfaza/PersianCalendar/issues"
+  },
+  "homepage": "https://github.com/isarjanfaza/PersianCalendar#readme",
   "type": "module",
   "dependencies": {
     "jalaali-js": "^2.0.1"
@@ -61,6 +69,7 @@
   "files": [
     "dist",
     "README.md",
+    "README.fa.md",
     "CHANGELOG.md",
     "LICENSE"
   ]

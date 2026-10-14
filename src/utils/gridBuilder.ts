@@ -1,19 +1,16 @@
 /**
- * dualcal - Pure calendar grid builder
+ * CalendarDate - Pure calendar grid builder (Gregorian only)
  */
 
-import type { CalendarDay, CalendarGrid, EventEntry, HolidayEntry, HijriConfig } from '../types';
+import type { CalendarDay, CalendarGrid, EventEntry, HolidayEntry } from '../types';
 import {
-  toJalaaliDate,
-  getJalaaliMonthStart,
-  getJalaaliMonthEnd,
+  getMonthStart,
+  getMonthEnd,
   getDayOfWeek,
   addDays,
   isToday,
   isSameDay,
-  getHijriMonthDay,
   formatGregorian,
-  toJalaali,
 } from './dateUtils';
 import { getHolidayForDate, isWeekend } from './holidayUtils';
 
@@ -23,29 +20,25 @@ import { getHolidayForDate, isWeekend } from './holidayUtils';
 export interface GridBuilderOptions {
   weekendDays: number[];
   holidayMaps: {
-    jalaliMap: Map<string, HolidayEntry[]>;
-    hijriMap: Map<string, HolidayEntry[]>;
     exactDateMap: Map<string, HolidayEntry[]>;
   };
-  hijriConfig: HijriConfig;
   events: EventEntry[];
-  showHijri: boolean;
   weekStart: number;
 }
 
 /**
- * Build calendar grid for a given Jalaali month
+ * Build calendar grid for a given Gregorian month
  */
 export function buildCalendarGrid(
-  jy: number,
-  jm: number,
+  year: number,
+  month: number,
   options: GridBuilderOptions,
 ): CalendarGrid {
-  const { weekendDays, holidayMaps, hijriConfig, events, showHijri, weekStart } = options;
+  const { weekendDays, holidayMaps, events, weekStart } = options;
 
-  // Get the first and last day of the Jalaali month
-  const monthStart = getJalaaliMonthStart(jy, jm);
-  const monthEnd = getJalaaliMonthEnd(jy, jm);
+  // Get the first and last day of the Gregorian month
+  const monthStart = getMonthStart(year, month);
+  const monthEnd = getMonthEnd(year, month);
 
   // Find the first day to display (might be from previous month)
   const startDayOfWeek = getDayOfWeek(monthStart);
@@ -64,10 +57,9 @@ export function buildCalendarGrid(
   for (let i = 0; i < totalDays; i++) {
     const currentDate = addDays(gridStart, i);
     const gregorianIso = formatGregorian(currentDate);
-    const jalaliDate = toJalaaliDate(currentDate);
 
-    // Check if this day is in the current Jalaali month
-    const isCurrentMonth = jalaliDate.jy === jy && jalaliDate.jm === jm;
+    // Check if this day is in the current Gregorian month
+    const isCurrentMonth = currentDate.getFullYear() === year && currentDate.getMonth() === month - 1;
 
     // Check if today
     const isTodayDate = isToday(currentDate);
@@ -76,7 +68,7 @@ export function buildCalendarGrid(
     const isWeekendDay = isWeekend(currentDate, weekendDays);
 
     // Check if holiday (returns array)
-    const holidays = getHolidayForDate(currentDate, jalaliDate, holidayMaps, hijriConfig);
+    const holidays = getHolidayForDate(currentDate, holidayMaps);
     const isHolidayDay = holidays.some(h => h.holiday === true) || isWeekendDay;
 
     // Get events for this day
@@ -85,29 +77,19 @@ export function buildCalendarGrid(
       return isSameDay(eventDate, currentDate);
     });
 
-    // Get Hijri date if enabled (use adjusted date from monthStarts)
-    const hijriDateObj = showHijri ? getHijriMonthDay(currentDate, hijriConfig) : null;
-    const hijriDate = hijriDateObj ? `${hijriDateObj.month}/${hijriDateObj.day}` : undefined;
-
-    // Check if first of Jalali month
-    const isJalaliFirst = jalaliDate.jd === 1;
-
-    // Check if first of Gregorian month
-    const isGregorianFirst = currentDate.getDate() === 1;
+    // Check if first of month
+    const isFirstOfMonth = currentDate.getDate() === 1;
 
     days.push({
       gregorianDate: currentDate,
       gregorianIso,
-      jalaliDate,
-      hijriDate,
       isToday: isTodayDate,
       isCurrentMonth,
       isWeekend: isWeekendDay,
       isHoliday: isHolidayDay,
       holidays: holidays.length > 0 ? holidays : undefined,
       events: dayEvents,
-      isJalaliFirst,
-      isGregorianFirst,
+      isFirstOfMonth,
     });
   }
 
@@ -115,8 +97,8 @@ export function buildCalendarGrid(
   const weeksCount = Math.ceil(days.length / 7);
 
   return {
-    year: jy,
-    month: jm,
+    year,
+    month,
     days,
     weekStart,
     weeksCount,
@@ -164,8 +146,7 @@ export function getPrevMonthGrid(
  */
 export function getTodayMonthGrid(options: GridBuilderOptions): CalendarGrid {
   const today = new Date();
-  const jalali = toJalaali(today.getFullYear(), today.getMonth() + 1, today.getDate());
-  return buildCalendarGrid(jalali.jy, jalali.jm, options);
+  return buildCalendarGrid(today.getFullYear(), today.getMonth() + 1, options);
 }
 
 /**
@@ -175,8 +156,7 @@ export function getDateMonthGrid(
   date: Date,
   options: GridBuilderOptions,
 ): CalendarGrid {
-  const jalali = toJalaaliDate(date);
-  return buildCalendarGrid(jalali.jy, jalali.jm, options);
+  return buildCalendarGrid(date.getFullYear(), date.getMonth() + 1, options);
 }
 
 /**
@@ -184,16 +164,4 @@ export function getDateMonthGrid(
  */
 export function findDayInGrid(grid: CalendarGrid, gregorianIso: string): CalendarDay | undefined {
   return grid.days.find((day) => day.gregorianIso === gregorianIso);
-}
-
-/**
- * Find a day in the grid by Jalaali date
- */
-export function findDayInGridByJalaali(
-  grid: CalendarGrid,
-  jy: number,
-  jm: number,
-  jd: number,
-): CalendarDay | undefined {
-  return grid.days.find((day) => day.jalaliDate.jy === jy && day.jalaliDate.jm === jm && day.jalaliDate.jd === jd);
 }

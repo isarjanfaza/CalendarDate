@@ -1,5 +1,5 @@
 /**
- * dualcal - Core DualCalendar class
+ * CalendarDate - Core DualCalendar class (Gregorian only)
  */
 
 import type {
@@ -8,12 +8,9 @@ import type {
   HolidayEntry,
   EventEntry,
   DualCalTheme,
-  HijriConfig,
 } from './types';
 import {
   parseDate,
-  toJalaaliDate,
-  toJalaali,
 } from './utils/dateUtils';
 import {
   validateHolidaysSchema,
@@ -36,33 +33,26 @@ export class DualCalendar {
   private options: Required<Omit<DualCalendarOptions, 'theme'>> & { theme?: DualCalTheme };
   private currentGrid!: CalendarGrid;
   private holidayMaps: {
-    jalaliMap: Map<string, HolidayEntry[]>;
-    hijriMap: Map<string, HolidayEntry[]>;
     exactDateMap: Map<string, HolidayEntry[]>;
   };
-  private hijriConfig: HijriConfig;
   private rawHolidays: HolidayEntry[];
   private destroyed = false;
 
   constructor(container: HTMLElement, options: DualCalendarOptions = {}) {
     this.container = container;
     this.holidayMaps = {
-      jalaliMap: new Map(),
-      hijriMap: new Map(),
       exactDateMap: new Map(),
     };
-    this.hijriConfig = {};
     this.rawHolidays = [];
 
     // Merge with defaults
     this.options = {
       holidays: [],
-      weekendDays: [6], // Friday (adjusted: Sunday=0 -> Saturday=0, Friday=6)
+      weekendDays: [0, 6], // Saturday and Sunday
       initialDate: new Date(),
       events: [],
-      showHijri: false,
-      gregorianDigits: 'latin',
       monthListMode: 'popover',
+      locale: 'en',
       onDayClick: () => {},
       onMonthChange: () => {},
       theme: options.theme,
@@ -73,9 +63,8 @@ export class DualCalendar {
     if (options.weekendDays !== undefined) this.options.weekendDays = options.weekendDays;
     if (options.initialDate !== undefined) this.options.initialDate = options.initialDate;
     if (options.events !== undefined) this.options.events = options.events;
-    if (options.showHijri !== undefined) this.options.showHijri = options.showHijri;
-    if (options.gregorianDigits !== undefined) this.options.gregorianDigits = options.gregorianDigits;
     if (options.monthListMode !== undefined) this.options.monthListMode = options.monthListMode;
+    if (options.locale !== undefined) this.options.locale = options.locale;
     if (options.onDayClick !== undefined) this.options.onDayClick = options.onDayClick;
     if (options.onMonthChange !== undefined) this.options.onMonthChange = options.onMonthChange;
 
@@ -83,8 +72,9 @@ export class DualCalendar {
     this.initializeHolidays().then(() => {
       // Build initial grid
       const initialDate = parseDate(this.options.initialDate);
-      const jalali = toJalaaliDate(initialDate);
-      this.currentGrid = this.buildGrid(jalali.jy, jalali.jm);
+      const year = initialDate.getFullYear();
+      const month = initialDate.getMonth() + 1;
+      this.currentGrid = this.buildGrid(year, month);
 
       // Render
       this.render();
@@ -117,43 +107,35 @@ export class DualCalendar {
       // Store the raw holidays for later resolution
       this.rawHolidays = schema.holidays;
 
-      // Extract Hijri config if present
-      this.hijriConfig = schema.hijri || {};
-
       // Get current year for holiday resolution
       const today = new Date();
-      const jalali = toJalaali(today.getFullYear(), today.getMonth() + 1, today.getDate());
+      const year = today.getFullYear();
 
       // Resolve holidays for current year
-      this.holidayMaps = resolveHolidays(schema.holidays, jalali.jy, this.hijriConfig);
+      this.holidayMaps = resolveHolidays(schema.holidays, year);
     } catch (error) {
-      console.error('[dualcal] Failed to initialize holidays:', error);
+      console.error('[CalendarDate] Failed to initialize holidays:', error);
       this.holidayMaps = {
-        jalaliMap: new Map(),
-        hijriMap: new Map(),
         exactDateMap: new Map(),
       };
       this.rawHolidays = [];
-      this.hijriConfig = {};
     }
   }
 
   /**
-   * Build calendar grid for a given Jalaali month
+   * Build calendar grid for a given Gregorian month
    */
-  private buildGrid(jy: number, jm: number): CalendarGrid {
+  private buildGrid(year: number, month: number): CalendarGrid {
     // Resolve holidays for the specific year
-    this.holidayMaps = resolveHolidays(this.rawHolidays, jy, this.hijriConfig);
+    this.holidayMaps = resolveHolidays(this.rawHolidays, year);
 
     const options: GridBuilderOptions = {
       weekendDays: this.options.weekendDays,
       holidayMaps: this.holidayMaps,
-      hijriConfig: this.hijriConfig,
       events: this.options.events,
-      showHijri: this.options.showHijri,
-      weekStart: 0, // Saturday
+      weekStart: 0, // Sunday
     };
-    return buildCalendarGrid(jy, jm, options);
+    return buildCalendarGrid(year, month, options);
   }
 
   /**
@@ -168,20 +150,14 @@ export class DualCalendar {
     }
 
     renderCalendar(this.container, this.currentGrid, {
-      gregorianDigits: this.options.gregorianDigits,
       monthListMode: this.options.monthListMode,
+      locale: this.options.locale,
       onDayClick: (day) => {
-        this.options.onDayClick?.(day.gregorianDate, day.jalaliDate);
+        this.options.onDayClick?.(day.gregorianDate);
       },
-      onMonthChange: (jy, jm) => {
+      onMonthChange: (year, month) => {
         // Navigate to selected month
-        this.currentGrid = this.buildGrid(jy, jm);
-        this.updateRender();
-        this.options.onMonthChange?.(this.currentGrid);
-      },
-      onYearChange: (newYear) => {
-        // Navigate to selected year (same month)
-        this.currentGrid = this.buildGrid(newYear, this.currentGrid.month);
+        this.currentGrid = this.buildGrid(year, month);
         this.updateRender();
         this.options.onMonthChange?.(this.currentGrid);
       },
@@ -189,33 +165,7 @@ export class DualCalendar {
       onPrevMonth: () => this.prev(),
       onGoToToday: () => this.goToToday(),
     });
-
-    // No tooltip listeners - tooltips removed
   }
-
-  /**
-   * Attach tooltip listeners to holiday cells - DEPRECATED, tooltips removed
-   */
-  /*
-  private attachTooltipListeners(): void {
-    const holidayCells = this.container.querySelectorAll('.dualcal-day');
-    holidayCells.forEach((cell) => {
-      const dayIndex = cell.getAttribute('data-index');
-      if (dayIndex) {
-        const day = this.currentGrid.days[parseInt(dayIndex, 10)];
-        if (day && day.holidays && day.holidays.length > 0) {
-          const holidayTitles = day.holidays.map(h => h.title).join(', ');
-          cell.addEventListener('mouseenter', () => {
-            showTooltip(cell as HTMLElement, holidayTitles);
-          });
-          cell.addEventListener('mouseleave', () => {
-            hideTooltip();
-          });
-        }
-      }
-    });
-  }
-  */
 
   /**
    * Apply custom theme
@@ -233,13 +183,9 @@ export class DualCalendar {
     if (theme.weekdayBg) root.style.setProperty('--dc-weekday-bg', theme.weekdayBg);
     if (theme.weekdayText) root.style.setProperty('--dc-weekday-text', theme.weekdayText);
     if (theme.weekdayRadius) root.style.setProperty('--dc-weekday-radius', theme.weekdayRadius);
-    if (theme.dayJalaliColor) root.style.setProperty('--dc-day-jalali-color', theme.dayJalaliColor);
-    if (theme.dayGregorianColor) root.style.setProperty('--dc-day-gregorian-color', theme.dayGregorianColor);
-    if (theme.dayHijriColor) root.style.setProperty('--dc-day-hijri-color', theme.dayHijriColor);
+    if (theme.dayColor) root.style.setProperty('--dc-day-color', theme.dayColor);
     if (theme.holidayBg) root.style.setProperty('--dc-holiday-bg', theme.holidayBg);
-    if (theme.holidayJalaliColor) root.style.setProperty('--dc-holiday-jalali-color', theme.holidayJalaliColor);
-    if (theme.holidayGregorianColor) root.style.setProperty('--dc-holiday-gregorian-color', theme.holidayGregorianColor);
-    if (theme.holidayHijriColor) root.style.setProperty('--dc-holiday-hijri-color', theme.holidayHijriColor);
+    if (theme.holidayColor) root.style.setProperty('--dc-holiday-color', theme.holidayColor);
     if (theme.todayBorder) root.style.setProperty('--dc-today-border', theme.todayBorder);
     if (theme.todayBorderWidth) root.style.setProperty('--dc-today-border-width', theme.todayBorderWidth);
     if (theme.navColor) root.style.setProperty('--dc-nav-color', theme.navColor);
@@ -265,8 +211,9 @@ export class DualCalendar {
    */
   public goTo(date: Date | string): void {
     const parsedDate = parseDate(date);
-    const jalali = toJalaaliDate(parsedDate);
-    this.currentGrid = this.buildGrid(jalali.jy, jalali.jm);
+    const year = parsedDate.getFullYear();
+    const month = parsedDate.getMonth() + 1;
+    this.currentGrid = this.buildGrid(year, month);
     this.updateRender();
     this.options.onMonthChange?.(this.currentGrid);
   }
@@ -276,18 +223,17 @@ export class DualCalendar {
    */
   public goToToday(): void {
     const today = new Date();
-    const jalali = toJalaali(today.getFullYear(), today.getMonth() + 1, today.getDate());
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
 
-    const holidayMaps = resolveHolidays(this.rawHolidays, jalali.jy, this.hijriConfig);
+    const holidayMaps = resolveHolidays(this.rawHolidays, year);
     const options: GridBuilderOptions = {
       weekendDays: this.options.weekendDays,
       holidayMaps,
-      hijriConfig: this.hijriConfig,
       events: this.options.events,
-      showHijri: this.options.showHijri,
       weekStart: 0,
     };
-    this.currentGrid = buildCalendarGrid(jalali.jy, jalali.jm, options);
+    this.currentGrid = buildCalendarGrid(year, month, options);
     this.updateRender();
     this.options.onMonthChange(this.currentGrid);
   }
@@ -304,13 +250,11 @@ export class DualCalendar {
       nextYear++;
     }
 
-    const holidayMaps = resolveHolidays(this.rawHolidays, nextYear, this.hijriConfig);
+    const holidayMaps = resolveHolidays(this.rawHolidays, nextYear);
     const options: GridBuilderOptions = {
       weekendDays: this.options.weekendDays,
       holidayMaps,
-      hijriConfig: this.hijriConfig,
       events: this.options.events,
-      showHijri: this.options.showHijri,
       weekStart: 0,
     };
     this.currentGrid = buildCalendarGrid(nextYear, nextMonth, options);
@@ -330,13 +274,11 @@ export class DualCalendar {
       prevYear--;
     }
 
-    const holidayMaps = resolveHolidays(this.rawHolidays, prevYear, this.hijriConfig);
+    const holidayMaps = resolveHolidays(this.rawHolidays, prevYear);
     const options: GridBuilderOptions = {
       weekendDays: this.options.weekendDays,
       holidayMaps,
-      hijriConfig: this.hijriConfig,
       events: this.options.events,
-      showHijri: this.options.showHijri,
       weekStart: 0,
     };
     this.currentGrid = buildCalendarGrid(prevYear, prevMonth, options);
@@ -350,15 +292,13 @@ export class DualCalendar {
   private updateRender(): void {
     if (this.destroyed) return;
 
-    updateHeader(this.container, this.currentGrid);
+    updateHeader(this.container, this.currentGrid, this.options.locale);
     updateGrid(this.container, this.currentGrid, {
-      gregorianDigits: this.options.gregorianDigits,
+      locale: this.options.locale,
       onDayClick: (day) => {
-        this.options.onDayClick?.(day.gregorianDate, day.jalaliDate);
+        this.options.onDayClick?.(day.gregorianDate);
       },
     });
-
-    // No tooltip listeners - tooltips removed
   }
 
   /**

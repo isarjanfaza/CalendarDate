@@ -1,5 +1,5 @@
 /**
- * dualcal - Persian (Jalali) + Gregorian Calendar Widget
+ * CalendarDate - Gregorian Calendar Widget
  * Framework-agnostic vanilla TypeScript library
  */
 
@@ -10,49 +10,42 @@ export { DualCalendar, createDualCalendar } from './DualCalendar';
 export type {
   CalendarType,
   HolidayType,
-  GregorianDigits,
   WeekdayIndex,
   DualCalTheme,
   HolidayEntry,
   EventEntry,
   HolidaysSchema,
   DualCalendarOptions,
-  JalaaliDate,
   CalendarDay,
   CalendarGrid,
+  Locale,
 } from './types';
 
 // Constants
 export {
-  PERSIAN_MONTHS,
-  PERSIAN_WEEKDAYS_SHORT,
-  PERSIAN_WEEKDAYS_FULL,
   GREGORIAN_MONTHS_SHORT,
   GREGORIAN_MONTHS_FULL,
+  WEEKDAYS_SHORT,
+  WEEKDAYS_FULL,
 } from './types';
+
+// i18n
+export { getTranslations, getMonthName, getWeekdayName } from './i18n/translations';
+export type { Translations } from './i18n/translations';
 
 // Date utilities (for advanced usage)
 export {
   parseDate,
-  toJalaaliDate,
-  fromJalaaliDate,
-  formatJalaali,
   formatGregorian,
-  getHijriDate,
-  toPersianDigits,
-  toLatinDigits,
-  isJalaaliLeapYear,
-  getJalaaliMonthLength,
   getDayOfWeek,
   addDays,
   addMonths,
-  getJalaaliMonthStart,
-  getJalaaliMonthEnd,
+  getMonthStart,
+  getMonthEnd,
   isSameDay,
   isToday,
   validateHolidayDate,
   normalizeHolidayDate,
-  getJalaaliMonthName,
   getGregorianMonthName,
 } from './utils/dateUtils';
 
@@ -78,7 +71,6 @@ export {
   getTodayMonthGrid,
   getDateMonthGrid,
   findDayInGrid,
-  findDayInGridByJalaali,
   type GridBuilderOptions,
 } from './utils/gridBuilder';
 

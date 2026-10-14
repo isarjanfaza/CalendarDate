@@ -32,3 +32,6 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+
+# Scripts
+combine_photos.py

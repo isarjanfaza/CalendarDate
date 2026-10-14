@@ -1,30 +1,13 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PersianCalendar - Vanilla Example</title>
-  <link rel="stylesheet" href="/dist/dualcal.css">
-  <style>
-    @font-face {
-      font-family: 'IranSansX';
-      src: url('/public/IRANSansX-Regular.woff2') format('woff2');
-      font-weight: 400;
-      font-style: normal;
-      font-display: swap;
-    }
-
-    @font-face {
-      font-family: 'IranSansX';
-      src: url('/public/IRANSansX-Bold.woff2') format('woff2');
-      font-weight: 700;
-      font-style: normal;
-      font-display: swap;
-    }
-  </style>
+  <title>CalendarDate - Vanilla Example</title>
+  <link rel="stylesheet" href="../dist/dualcal.css">
   <style>
     body {
-      font-family: 'Vazirmatn', 'Tahoma', system-ui, sans-serif;
+      font-family: system-ui, -apple-system, sans-serif;
       margin: 0;
       padding: 40px;
       background-color: #f5f5f5;
@@ -55,15 +38,15 @@
 </head>
 <body>
   <div class="container">
-    <h1>PersianCalendar - Vanilla Example</h1>
+    <h1>CalendarDate - Vanilla Example</h1>
     <p class="description">
-      Persian (Jalali) + Gregorian calendar widget
+      Gregorian calendar widget with holidays and events
     </p>
     <div id="calendar"></div>
   </div>
 
   <script type="module">
-    import { createDualCalendar } from '/dist/index.js';
+    import { createDualCalendar } from '../src/index.ts';
 
     console.log('Script loaded, dualcal imported:', typeof createDualCalendar);
 
@@ -72,18 +55,17 @@
 
     try {
       // Load holidays from JSON file
-      const holidaysResponse = await fetch('/examples/holidays.json');
+      const holidaysResponse = await fetch('holidays.json');
       const holidaysData = await holidaysResponse.json();
       console.log('Holidays loaded:', holidaysData);
 
       const calendar = createDualCalendar(container, {
         holidays: holidaysData.holidays,
-        weekendDays: [6], // Friday (6 in our system where Saturday=0, Sunday=1, ..., Friday=6)
+        weekendDays: [0, 6], // Saturday and Sunday
         initialDate: new Date(),
-        showHijri: true,
-        gregorianDigits: 'latin',
-        onDayClick: (date, jalaliDate) => {
-          console.log('Day clicked:', date, jalaliDate);
+        locale: 'en', // Available: 'en', 'fr', 'de'
+        onDayClick: (date) => {
+          console.log('Day clicked:', date);
         },
         onMonthChange: (grid) => {
           console.log('Month changed:', grid);
@@ -92,7 +74,7 @@
           // Custom theme colors (optional)
           headerColor: '#B34000',
           holidayBg: '#FFF0F0',
-          holidayJalaliColor: '#D0021B',
+          holidayColor: '#D0021B',
         },
       });
 

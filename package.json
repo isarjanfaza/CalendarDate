@@ -1,76 +1,61 @@
 {
-  "name": "persiancalendar",
-  "version": "1.0.2",
-  "description": "Persian (Jalali) + Gregorian calendar widget - framework-agnostic vanilla TypeScript",
+  "name": "calendardate",
+  "version": "3.0.1",
+  "description": "Gregorian calendar widget - A framework-agnostic vanilla TypeScript library for displaying holidays and events.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
     },
-    "./dist/dualcal.css": "./dist/dualcal.css"
+    "./package.json": "./package.json"
   },
-  "sideEffects": false,
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage",
-    "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build",
+    "lint": "eslint src/**/*.ts && tsc --noEmit"
   },
-  "keywords": [
-    "persian",
-    "jalali",
-    "shamsi",
-    "calendar",
-    "gregorian",
-    "hijri",
-    "iran",
-    "rtl",
-    "date-picker",
-    "dual-calendar"
-  ],
-  "author": "Eytar Janfaza",
-  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/isarjanfaza/PersianCalendar.git"
+    "url": "git@github.com:isarjanfaza/CalendarDate.git"
   },
   "bugs": {
-    "url": "https://github.com/isarjanfaza/PersianCalendar/issues"
+    "url": "https://github.com/isarjanfaza/CalendarDate/issues"
   },
-  "homepage": "https://github.com/isarjanfaza/PersianCalendar#readme",
-  "type": "module",
-  "dependencies": {
-    "jalaali-js": "^2.0.1"
-  },
+  "homepage": "https://github.com/isarjanfaza/CalendarDate#readme",
+  "keywords": [
+    "gregorian",
+    "calendar",
+    "date",
+    "time",
+    "holidays",
+    "events",
+    "widget"
+  ],
+  "author": "Isar Janfaza",
+  "license": "MIT",
   "devDependencies": {
-    "@types/jsdom": "^30.0.0",
-    "@types/node": "^26.6.5",
-    "@typescript-eslint/eslint-plugin": "^8.71.1",
-    "@typescript-eslint/parser": "^8.71.1",
-    "@vitest/ui": "^5.0.3",
-    "eslint": "^10.12.0",
-    "jsdom": "^30.1.2",
-    "prettier": "^3.9.10",
-    "tsup": "^8.5.1",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.71.1",
-    "vitest": "^5.0.3"
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "README.fa.md",
-    "CHANGELOG.md",
-    "LICENSE"
-  ]
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@typescript-eslint/eslint-plugin": "^7.6.0",
+    "@typescript-eslint/parser": "^7.6.0",
+    "eslint": "^8.57.0",
+    "rollup": "^4.13.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.4.3",
+    "vitest": "^1.4.0"
+  }
 }

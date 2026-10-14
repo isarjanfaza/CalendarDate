@@ -1,14 +1,11 @@
 /**
- * dualcal - Holiday resolution and validation
+ * CalendarDate - Holiday resolution and validation (Gregorian only)
  */
 
-import type { HolidayEntry, HolidaysSchema, CalendarType, HijriConfig, HijriOverride } from '../types';
+import type { HolidayEntry, HolidaysSchema, CalendarType } from '../types';
 import {
   validateHolidayDate,
-  normalizeHolidayDate,
   formatGregorian,
-  parseHijriDate,
-  getHijriHolidaysForDate,
 } from './dateUtils';
 
 /**
@@ -27,7 +24,7 @@ export class HolidayValidationError extends Error {
 export function validateHolidayEntry(entry: unknown, index: number): HolidayEntry {
   if (typeof entry !== 'object' || entry === null) {
     throw new HolidayValidationError(
-      `[dualcal] Holiday at index ${index} must be an object`,
+      `[CalendarDate] Holiday at index ${index} must be an object`,
       index,
     );
   }
@@ -37,18 +34,15 @@ export function validateHolidayEntry(entry: unknown, index: number): HolidayEntr
   // Validate date
   if (typeof holiday.date !== 'string' || !holiday.date) {
     throw new HolidayValidationError(
-      `[dualcal] Holiday at index ${index}: missing or invalid 'date' field`,
+      `[CalendarDate] Holiday at index ${index}: missing or invalid 'date' field`,
       index,
     );
   }
 
   // Validate calendar
-  if (
-    typeof holiday.calendar !== 'string' ||
-    (holiday.calendar !== 'jalali' && holiday.calendar !== 'gregorian' && holiday.calendar !== 'hijri')
-  ) {
+  if (typeof holiday.calendar !== 'string' || holiday.calendar !== 'gregorian') {
     throw new HolidayValidationError(
-      `[dualcal] Holiday at index ${index}: 'calendar' must be 'jalali', 'gregorian', or 'hijri'`,
+      `[CalendarDate] Holiday at index ${index}: 'calendar' must be 'gregorian'`,
       index,
     );
   }
@@ -56,7 +50,7 @@ export function validateHolidayEntry(entry: unknown, index: number): HolidayEntr
   // Validate title
   if (typeof holiday.title !== 'string' || !holiday.title) {
     throw new HolidayValidationError(
-      `[dualcal] Holiday at index ${index}: missing or invalid 'title' field`,
+      `[CalendarDate] Holiday at index ${index}: missing or invalid 'title' field`,
       index,
     );
   }
@@ -64,7 +58,7 @@ export function validateHolidayEntry(entry: unknown, index: number): HolidayEntr
   // Validate recurring
   if (typeof holiday.recurring !== 'boolean') {
     throw new HolidayValidationError(
-      `[dualcal] Holiday at index ${index}: 'recurring' must be a boolean`,
+      `[CalendarDate] Holiday at index ${index}: 'recurring' must be a boolean`,
       index,
     );
   }
@@ -74,7 +68,7 @@ export function validateHolidayEntry(entry: unknown, index: number): HolidayEntr
     const validTypes = ['official', 'religious', 'national', 'international', 'historical', 'personal'];
     if (typeof holiday.type !== 'string' || !validTypes.includes(holiday.type)) {
       throw new HolidayValidationError(
-        `[dualcal] Holiday at index ${index}: 'type' must be one of: ${validTypes.join(', ')}`,
+        `[CalendarDate] Holiday at index ${index}: 'type' must be one of: ${validTypes.join(', ')}`,
         index,
       );
     }
@@ -86,7 +80,7 @@ export function validateHolidayEntry(entry: unknown, index: number): HolidayEntr
     typeof holiday.holiday !== 'boolean'
   ) {
     throw new HolidayValidationError(
-      `[dualcal] Holiday at index ${index}: 'holiday' must be a boolean`,
+      `[CalendarDate] Holiday at index ${index}: 'holiday' must be a boolean`,
       index,
     );
   }
@@ -95,20 +89,9 @@ export function validateHolidayEntry(entry: unknown, index: number): HolidayEntr
   const calendar = holiday.calendar as CalendarType;
   if (!validateHolidayDate(holiday.date, calendar)) {
     throw new HolidayValidationError(
-      `[dualcal] Holiday at index ${index}: invalid date format for calendar type '${calendar}'`,
+      `[CalendarDate] Holiday at index ${index}: invalid date format for calendar type '${calendar}'`,
       index,
     );
-  }
-
-  // Additional validation for Hijri dates
-  if (calendar === 'hijri') {
-    const hijriDate = parseHijriDate(holiday.date);
-    if (!hijriDate) {
-      throw new HolidayValidationError(
-        `[dualcal] Holiday at index ${index}: invalid Hijri date format '${holiday.date}', expected 'MM/DD' with valid month (1-12) and day`,
-        index,
-      );
-    }
   }
 
   return {
@@ -127,14 +110,14 @@ export function validateHolidayEntry(entry: unknown, index: number): HolidayEntr
  */
 export function validateHolidaysSchema(schema: unknown): HolidaysSchema {
   if (typeof schema !== 'object' || schema === null) {
-    throw new Error('[dualcal] Holidays schema must be an object');
+    throw new Error('[CalendarDate] Holidays schema must be an object');
   }
 
   const holidaysSchema = schema as Record<string, unknown>;
 
   // Validate holidays array
   if (!Array.isArray(holidaysSchema.holidays)) {
-    throw new Error('[dualcal] Holidays schema must have a "holidays" array');
+    throw new Error('[CalendarDate] Holidays schema must have a "holidays" array');
   }
 
   // Validate each holiday
@@ -142,77 +125,15 @@ export function validateHolidaysSchema(schema: unknown): HolidaysSchema {
     validateHolidayEntry(entry, index),
   );
 
-  // Validate hijri config if present
-  let hijriConfig: HijriConfig | undefined;
-  if (holidaysSchema.hijri !== undefined) {
-    if (typeof holidaysSchema.hijri !== 'object' || holidaysSchema.hijri === null) {
-      throw new Error('[dualcal] "hijri" must be an object');
-    }
-    const hijriObj = holidaysSchema.hijri as Record<string, unknown>;
-
-    // Validate offset
-    if (hijriObj.offset !== undefined) {
-      if (typeof hijriObj.offset !== 'number') {
-        throw new Error('[dualcal] "hijri.offset" must be a number');
-      }
-    }
-
-    // Validate monthStarts (optional)
-    if (hijriObj.monthStarts !== undefined) {
-      if (typeof hijriObj.monthStarts !== 'object' || hijriObj.monthStarts === null) {
-        throw new Error('[dualcal] "hijri.monthStarts" must be an object');
-      }
-      const monthStarts = hijriObj.monthStarts as Record<string, unknown>;
-      for (const [key, value] of Object.entries(monthStarts)) {
-        if (typeof value !== 'string') {
-          throw new Error(`[dualcal] "hijri.monthStarts[${key}]" must be a string (Gregorian ISO date)`);
-        }
-        // Validate the date format
-        try {
-          new Date(value);
-        } catch {
-          throw new Error(`[dualcal] "hijri.monthStarts[${key}]" must be a valid Gregorian ISO date`);
-        }
-      }
-    }
-
-    // Validate overrides
-    if (hijriObj.overrides !== undefined) {
-      if (!Array.isArray(hijriObj.overrides)) {
-        throw new Error('[dualcal] "hijri.overrides" must be an array');
-      }
-      for (const override of hijriObj.overrides) {
-        if (typeof override !== 'object' || override === null) {
-          throw new Error('[dualcal] Each override must be an object');
-        }
-        const overrideObj = override as Record<string, unknown>;
-        if (typeof overrideObj.hijri !== 'string' || !overrideObj.hijri) {
-          throw new Error('[dualcal] Override must have "hijri" string');
-        }
-        if (typeof overrideObj.date !== 'string' || !overrideObj.date) {
-          throw new Error('[dualcal] Override must have "date" string');
-        }
-      }
-    }
-
-    hijriConfig = {
-      offset: typeof hijriObj.offset === 'number' ? hijriObj.offset : 0,
-      monthStarts: typeof hijriObj.monthStarts === 'object' && hijriObj.monthStarts !== null
-        ? hijriObj.monthStarts as Record<string, string>
-        : undefined,
-      overrides: Array.isArray(hijriObj.overrides) ? hijriObj.overrides as HijriOverride[] : [],
-    };
-  }
-
   // Validate weekends if present
   let weekends: number[] | undefined;
   if (holidaysSchema.weekends !== undefined) {
     if (!Array.isArray(holidaysSchema.weekends)) {
-      throw new Error('[dualcal] "weekends" must be an array of numbers');
+      throw new Error('[CalendarDate] "weekends" must be an array of numbers');
     }
     weekends = holidaysSchema.weekends as number[];
     if (!weekends.every((w) => typeof w === 'number' && w >= 0 && w <= 6)) {
-      throw new Error('[dualcal] "weekends" must contain numbers 0-6');
+      throw new Error('[CalendarDate] "weekends" must contain numbers 0-6');
     }
   }
 
@@ -220,17 +141,16 @@ export function validateHolidaysSchema(schema: unknown): HolidaysSchema {
   let weekStart: number | undefined;
   if (holidaysSchema.weekStart !== undefined) {
     if (typeof holidaysSchema.weekStart !== 'number') {
-      throw new Error('[dualcal] "weekStart" must be a number');
+      throw new Error('[CalendarDate] "weekStart" must be a number');
     }
     weekStart = holidaysSchema.weekStart as number;
     if (weekStart < 0 || weekStart > 6) {
-      throw new Error('[dualcal] "weekStart" must be between 0 and 6');
+      throw new Error('[CalendarDate] "weekStart" must be between 0 and 6');
     }
   }
 
   return {
     holidays: validatedHolidays,
-    hijri: hijriConfig,
     weekends,
     weekStart,
   };
@@ -266,27 +186,12 @@ export function expandRecurringHolidays(holidays: HolidayEntry[], year: number):
       // We need to expand it for the given year
       const [month, day] = holiday.date.split('/').map(Number);
 
-      if (holiday.calendar === 'jalali') {
-        // Jalali recurring: expand to the given Jalali year
-        expanded.push({
-          ...holiday,
-          date: `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`,
-        });
-      } else if (holiday.calendar === 'hijri') {
-        // Hijri recurring: keep as MM/DD, will be converted during normalization
-        // We don't add a year here because Hijri dates are converted on-the-fly
-        expanded.push({
-          ...holiday,
-          date: `${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`,
-        });
-      } else {
-        // Gregorian recurring: expand to the given Gregorian year
-        const gregorianYear = year;
-        expanded.push({
-          ...holiday,
-          date: `${gregorianYear}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
-        });
-      }
+      // Gregorian recurring: expand to the given Gregorian year
+      const gregorianYear = year;
+      expanded.push({
+        ...holiday,
+        date: `${gregorianYear}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+      });
     } else {
       // Non-recurring, keep as is
       expanded.push(holiday);
@@ -297,50 +202,18 @@ export function expandRecurringHolidays(holidays: HolidayEntry[], year: number):
 }
 
 /**
- * Resolve holidays into three maps for O(1) lookup
+ * Resolve holidays into a map for O(1) lookup
  */
 export function resolveHolidays(
   entries: HolidayEntry[],
   year: number,
-  _hijriConfig: HijriConfig = {},
 ): {
-  jalaliMap: Map<string, HolidayEntry[]>;
-  hijriMap: Map<string, HolidayEntry[]>;
   exactDateMap: Map<string, HolidayEntry[]>;
 } {
-  const jalaliMap = new Map<string, HolidayEntry[]>();
-  const hijriMap = new Map<string, HolidayEntry[]>();
   const exactDateMap = new Map<string, HolidayEntry[]>();
 
   for (const holiday of entries) {
-    if (holiday.calendar === 'jalali') {
-      if (holiday.recurring) {
-        // Recurring Jalali: MM/DD
-        const key = holiday.date; // Already in MM/DD format
-        if (!jalaliMap.has(key)) {
-          jalaliMap.set(key, []);
-        }
-        jalaliMap.get(key)!.push(holiday);
-      } else {
-        // Exact Jalali date: normalize to Gregorian ISO
-        try {
-          const gregorianIso = normalizeHolidayDate(holiday.date, 'jalali', year);
-          if (!exactDateMap.has(gregorianIso)) {
-            exactDateMap.set(gregorianIso, []);
-          }
-          exactDateMap.get(gregorianIso)!.push(holiday);
-        } catch (error) {
-          console.warn(`[dualcal] Failed to normalize Jalali holiday date: ${holiday.date}`, error);
-        }
-      }
-    } else if (holiday.calendar === 'hijri') {
-      // Hijri holidays are always recurring (MM/DD)
-      const key = holiday.date; // Already in MM/DD format
-      if (!hijriMap.has(key)) {
-        hijriMap.set(key, []);
-      }
-      hijriMap.get(key)!.push(holiday);
-    } else if (holiday.calendar === 'gregorian') {
+    if (holiday.calendar === 'gregorian') {
       if (holiday.recurring) {
         // Recurring Gregorian: will be handled by expanding for the year
         const [month, day] = holiday.date.split('/').map(Number);
@@ -359,7 +232,7 @@ export function resolveHolidays(
     }
   }
 
-  return { jalaliMap, hijriMap, exactDateMap };
+  return { exactDateMap };
 }
 
 /**
@@ -367,37 +240,18 @@ export function resolveHolidays(
  */
 export function getHolidayForDate(
   date: Date,
-  jalaliDate: { jy: number; jm: number; jd: number },
   maps: {
-    jalaliMap: Map<string, HolidayEntry[]>;
-    hijriMap: Map<string, HolidayEntry[]>;
     exactDateMap: Map<string, HolidayEntry[]>;
   },
-  hijriConfig: HijriConfig = {},
 ): HolidayEntry[] {
-  const { jalaliMap, hijriMap, exactDateMap } = maps;
+  const { exactDateMap } = maps;
   const holidays: HolidayEntry[] = [];
 
-  // Check exact date map first (highest priority)
+  // Check exact date map
   const isoDate = formatGregorian(date);
   const exactHolidays = exactDateMap.get(isoDate);
   if (exactHolidays) {
     holidays.push(...exactHolidays);
-  }
-
-  // Check Jalali recurring map
-  const jalaliKey = `${String(jalaliDate.jm).padStart(2, '0')}/${String(jalaliDate.jd).padStart(2, '0')}`;
-  const jalaliHolidays = jalaliMap.get(jalaliKey);
-  if (jalaliHolidays) {
-    holidays.push(...jalaliHolidays);
-  }
-
-  // Check Hijri map if Intl support is available
-  if (hijriMap.size > 0) {
-    const hijriHolidays = getHijriHolidaysForDate(date, jalaliDate, hijriMap, exactDateMap, hijriConfig);
-    if (hijriHolidays.length > 0) {
-      holidays.push(...hijriHolidays);
-    }
   }
 
   // Deduplicate by title
@@ -419,7 +273,7 @@ export function getHolidayForDate(
 export async function fetchHolidays(url: string): Promise<HolidaysSchema> {
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`[dualcal] Failed to fetch holidays from ${url}: ${response.statusText}`);
+    throw new Error(`[CalendarDate] Failed to fetch holidays from ${url}: ${response.statusText}`);
   }
 
   const schema = await response.json();
@@ -435,7 +289,7 @@ export function parseHolidays(jsonString: string): HolidaysSchema {
     return validateHolidaysSchema(schema);
   } catch (error) {
     if (error instanceof SyntaxError) {
-      throw new Error('[dualcal] Invalid JSON in holidays data');
+      throw new Error('[CalendarDate] Invalid JSON in holidays data');
     }
     throw error;
   }
@@ -446,7 +300,5 @@ export function parseHolidays(jsonString: string): HolidaysSchema {
  */
 export function isWeekend(date: Date, weekendDays: number[]): boolean {
   const dayOfWeek = date.getDay();
-  // Convert Sunday=0 to Saturday=0
-  const adjustedDay = (dayOfWeek + 1) % 7;
-  return weekendDays.includes(adjustedDay);
+  return weekendDays.includes(dayOfWeek);
 }

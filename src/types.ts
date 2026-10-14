@@ -1,12 +1,17 @@
 /**
- * dualcal - Persian (Jalali) + Gregorian Calendar Widget
+ * CalendarDate - Gregorian Calendar Widget
  * Type definitions
  */
 
 /**
  * Calendar type for holiday entries
  */
-export type CalendarType = 'jalali' | 'gregorian' | 'hijri';
+export type CalendarType = 'gregorian';
+
+/**
+ * Locale type for internationalization
+ */
+export type Locale = 'en' | 'fr' | 'de';
 
 /**
  * Holiday type category
@@ -14,12 +19,7 @@ export type CalendarType = 'jalali' | 'gregorian' | 'hijri';
 export type HolidayType = 'official' | 'religious' | 'national' | 'international' | 'historical' | 'personal';
 
 /**
- * Gregorian digits display option
- */
-export type GregorianDigits = 'latin' | 'persian';
-
-/**
- * Weekday index (0 = Saturday, 6 = Friday in RTL context)
+ * Weekday index (0 = Sunday, 6 = Saturday)
  */
 export type WeekdayIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -37,13 +37,9 @@ export interface DualCalTheme {
   weekdayBg?: string;
   weekdayText?: string;
   weekdayRadius?: string;
-  dayJalaliColor?: string;
-  dayGregorianColor?: string;
-  dayHijriColor?: string;
+  dayColor?: string;
   holidayBg?: string;
-  holidayJalaliColor?: string;
-  holidayGregorianColor?: string;
-  holidayHijriColor?: string;
+  holidayColor?: string;
   todayBorder?: string;
   todayBorderWidth?: string;
   navColor?: string;
@@ -58,7 +54,7 @@ export interface DualCalTheme {
  * Holiday entry
  */
 export interface HolidayEntry {
-  date: string; // "01/20" for recurring Jalali, "1405/07/20" for exact Jalali, "2026-10-10" for Gregorian, "01/20" for recurring Hijri
+  date: string; // "01/20" for recurring, "2026-10-10" for exact date (Gregorian ISO format)
   calendar: CalendarType;
   title: string;
   recurring: boolean;
@@ -77,28 +73,10 @@ export interface EventEntry {
 }
 
 /**
- * Hijri override entry
- */
-export interface HijriOverride {
-  hijri: string; // "MM/DD" Hijri month/day
-  date: string; // "1405/07/20" Jalali or "2026-10-10" Gregorian
-}
-
-/**
- * Hijri configuration
- */
-export interface HijriConfig {
-  offset?: number; // Day offset for Hijri calendar (default: 0)
-  monthStarts?: Record<string, string>; // "YYYY-MM" Hijri month -> Gregorian ISO start date (optional precision data)
-  overrides?: HijriOverride[]; // Specific year overrides
-}
-
-/**
  * Holidays schema
  */
 export interface HolidaysSchema {
   holidays: HolidayEntry[];
-  hijri?: HijriConfig;
   weekends?: number[];
   weekStart?: number;
 }
@@ -112,20 +90,10 @@ export interface DualCalendarOptions {
   initialDate?: Date | string;
   events?: EventEntry[];
   theme?: Partial<DualCalTheme>;
-  showHijri?: boolean;
-  gregorianDigits?: GregorianDigits;
   monthListMode?: 'popover' | 'inline';
-  onDayClick?: (date: Date, jalaliDate: JalaaliDate) => void;
+  locale?: Locale;
+  onDayClick?: (date: Date) => void;
   onMonthChange?: (grid: CalendarGrid) => void;
-}
-
-/**
- * Jalaali date components
- */
-export interface JalaaliDate {
-  jy: number; // Jalali year
-  jm: number; // Jalali month (1-12)
-  jd: number; // Jalali day (1-31)
 }
 
 /**
@@ -134,16 +102,13 @@ export interface JalaaliDate {
 export interface CalendarDay {
   gregorianDate: Date;
   gregorianIso: string;
-  jalaliDate: JalaaliDate;
-  hijriDate?: string;
   isToday: boolean;
   isCurrentMonth: boolean;
   isWeekend: boolean;
   isHoliday: boolean;
   holidays?: HolidayEntry[]; // Array of all holidays for this day
   events: EventEntry[];
-  isJalaliFirst: boolean;
-  isGregorianFirst: boolean;
+  isFirstOfMonth: boolean;
 }
 
 /**
@@ -158,43 +123,7 @@ export interface CalendarGrid {
 }
 
 /**
- * Persian month names
- */
-export const PERSIAN_MONTHS = [
-  'فروردین',
-  'اردیبهشت',
-  'خرداد',
-  'تیر',
-  'مرداد',
-  'شهریور',
-  'مهر',
-  'آبان',
-  'آذر',
-  'دی',
-  'بهمن',
-  'اسفند',
-] as const;
-
-/**
- * Persian weekday names (short)
- */
-export const PERSIAN_WEEKDAYS_SHORT = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'] as const;
-
-/**
- * Persian weekday names (full)
- */
-export const PERSIAN_WEEKDAYS_FULL = [
-  'شنبه',
-  'یک‌شنبه',
-  'دوشنبه',
-  'سه‌شنبه',
-  'چهارشنبه',
-  'پنج‌شنبه',
-  'جمعه',
-] as const;
-
-/**
- * Gregorian month names (short)
+ * @deprecated Use getMonthName() from i18n/translations instead
  */
 export const GREGORIAN_MONTHS_SHORT = [
   'Jan',
@@ -212,7 +141,7 @@ export const GREGORIAN_MONTHS_SHORT = [
 ] as const;
 
 /**
- * Gregorian month names (full)
+ * @deprecated Use getMonthName() from i18n/translations instead
  */
 export const GREGORIAN_MONTHS_FULL = [
   'January',
@@ -227,4 +156,22 @@ export const GREGORIAN_MONTHS_FULL = [
   'October',
   'November',
   'December',
+] as const;
+
+/**
+ * @deprecated Use getWeekdayName() from i18n/translations instead
+ */
+export const WEEKDAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+
+/**
+ * @deprecated Use getWeekdayName() from i18n/translations instead
+ */
+export const WEEKDAYS_FULL = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
 ] as const;

@@ -11,7 +11,7 @@ This program was created by **Isar Janfaza**.
 ## 📸 Screenshots
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-  <a href="Photo/combined_calendar.jpg" target="_blank"><img src="Photo/combined_calendar.jpg" style="width: 100%; height: auto;" alt="CalendarDate Screenshots" /></a>
+  <a href="photo/combined_calendar.jpg" target="_blank"><img src="photo/combined_calendar.jpg" style="width: 100%; height: auto;" alt="CalendarDate Screenshots" /></a>
 </div>
 
 ---
